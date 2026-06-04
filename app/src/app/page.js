@@ -1,65 +1,79 @@
-import Image from "next/image";
+import Link from "next/link";
+import { Layers, Building2, ArrowRight } from "lucide-react";
+import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+
+const reportTypes = [
+  {
+    href: "/pcf",
+    icon: Layers,
+    title: "PCF Report",
+    standard: "ISO 14067",
+    description:
+      "Product Carbon Footprint — quantify greenhouse gas emissions across the full lifecycle of a product, from materials to end of life.",
+  },
+  {
+    href: "/ocf",
+    icon: Building2,
+    title: "OCF Report",
+    standard: "ISO 14064",
+    description:
+      "Organization Carbon Footprint — measure and report your organization's total GHG emissions across Scopes 1, 2, and 3.",
+  },
+];
 
 export default function Home() {
   return (
-    <div className="flex flex-col flex-1 items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex flex-1 w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the page.js file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
-          </p>
+    <div className="flex flex-col min-h-screen bg-background">
+      <header className="border-b px-6 py-4">
+        <div className="mx-auto max-w-4xl flex items-center gap-2">
+          <span className="text-[#16a34a] font-bold text-lg tracking-tight">Footprint Mappa</span>
+          <span className="text-muted-foreground text-sm">Report Builder</span>
         </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={16}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
+      </header>
+
+      <main className="flex flex-1 flex-col items-center justify-center px-6 py-16">
+        <div className="mx-auto w-full max-w-4xl">
+          <div className="mb-10 text-center">
+            <h1 className="text-3xl font-semibold tracking-tight text-foreground">
+              Select Report Type
+            </h1>
+            <p className="mt-2 text-muted-foreground">
+              Choose the carbon footprint standard you want to report against.
+            </p>
+          </div>
+
+          <div className="grid gap-6 sm:grid-cols-2">
+            {reportTypes.map(({ href, icon: Icon, title, standard, description }) => (
+              <Card key={href} className="flex flex-col">
+                <CardHeader>
+                  <div className="mb-2 flex size-10 items-center justify-center rounded-lg bg-[#16a34a]/10">
+                    <Icon className="size-5 text-[#16a34a]" />
+                  </div>
+                  <CardTitle className="text-lg">{title}</CardTitle>
+                  <CardDescription>
+                    <span className="font-mono text-xs font-medium text-[#16a34a]">{standard}</span>
+                  </CardDescription>
+                </CardHeader>
+                <CardContent className="flex-1">
+                  <p className="text-sm text-muted-foreground">{description}</p>
+                </CardContent>
+                <CardFooter>
+                  <Button asChild className="w-full bg-[#16a34a] hover:bg-[#15803d] text-white">
+                    <Link href={href}>
+                      Generate {title} <ArrowRight className="ml-1 size-4" />
+                    </Link>
+                  </Button>
+                </CardFooter>
+              </Card>
+            ))}
+          </div>
         </div>
       </main>
+
+      <footer className="border-t px-6 py-4 text-center text-xs text-muted-foreground">
+        Confidential · Footprint Mappa · {new Date().getFullYear()}
+      </footer>
     </div>
   );
 }

@@ -61,3 +61,27 @@ Unit: kg CO2e per year
 - PDF must look professional: white background, green accent color (#16a34a),
   clean typography, page numbers
 - Never hardcode data — everything comes from the uploaded CSV
+
+## Brand Guidelines (Footprint Mappa)
+
+### Colors
+- Primary gradient: left #fdc2d8 (pink) → #fca65e (orange) → #ff7983 (coral) → #041282 (navy)
+- Backgrounds: black (#000000) or white (#ffffff) only
+- Text: black on white backgrounds, white on black backgrounds
+- Never use solid brand colors directly — they appear only in the gradient
+
+### Gradient usage
+- Use the gradient as accent element (headers, dividers, cover page strip)
+- CSS: background: linear-gradient(to right, #fdc2d8, #fca65e, #ff7983, #041282)
+- Can be used as full background only if it does not affect text legibility
+
+### Typography
+- Font: Inter (already configured in layout.js via next/font/google)
+- Weights: Regular for body/titles/subtitles, Bold for key highlights only
+- No decorative or display fonts
+
+### UI style
+- Clean, minimal, professional
+- White background for the web app
+- Gradient strip used as accent on cards and page headers
+- Black background acceptable for hero/cover sections
