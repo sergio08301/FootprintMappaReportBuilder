@@ -18,6 +18,7 @@ export default function PCFPage() {
       baseTitle="Products Carbon Footprint Report"
       standard="ISO 14067"
       columns={COLUMNS}
+      pdfType="pcf"
     />
   );
 }

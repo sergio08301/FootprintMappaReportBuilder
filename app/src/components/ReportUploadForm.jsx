@@ -3,7 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import Papa from "papaparse";
-import { ArrowLeft, FileDown, FileText, Upload } from "lucide-react";
+import { ArrowLeft, FileDown, FileText, Loader2, Upload } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -37,12 +37,13 @@ function formatCell(value, numeric) {
   return isNaN(num) ? "—" : `${num.toFixed(3)} kg CO2e`;
 }
 
-export function ReportUploadForm({ baseTitle, standard, columns }) {
+export function ReportUploadForm({ baseTitle, standard, columns, pdfType }) {
   const [company, setCompany] = useState("");
   const [year, setYear] = useState("");
   const [file, setFile] = useState(null);
   const [fileName, setFileName] = useState("");
   const [rows, setRows] = useState(null);
+  const [generating, setGenerating] = useState(false);
 
   const dynamicTitle =
     company && year ? `${baseTitle} — ${company} · ${year}` : baseTitle;
@@ -70,8 +71,50 @@ export function ReportUploadForm({ baseTitle, standard, columns }) {
     });
   }
 
-  function handleGeneratePDF() {
-    console.log("generate PDF");
+  async function handleGeneratePDF() {
+    if (!rows?.length) return;
+    setGenerating(true);
+    try {
+      const [
+        { generateIntroduction, generateMethodologicalApproach, generateScopeAndBoundaries },
+        { pdf },
+      ] = await Promise.all([
+        import("@/lib/generateReportContent"),
+        import("@react-pdf/renderer"),
+      ]);
+
+      const introText = await generateIntroduction(rows, company, year, pdfType);
+      const methodText = await generateMethodologicalApproach(company, year);
+      const { text: scopeText, scopeData } = await generateScopeAndBoundaries(rows, pdfType);
+
+      let doc;
+      if (pdfType === "pcf") {
+        const { PCFReport } = await import("@/components/pdf/PCFReport");
+        doc = (
+          <PCFReport
+            data={rows}
+            companyName={company}
+            year={year}
+            introText={introText}
+            methodText={methodText}
+            scopeText={scopeText}
+            scopeData={scopeData}
+          />
+        );
+      }
+      if (!doc) return;
+      const blob = await pdf(doc).toBlob();
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `${pdfType.toUpperCase()}_${company.replace(/\s+/g, "_")}_${year}.pdf`;
+      a.click();
+      URL.revokeObjectURL(url);
+    } catch (err) {
+      console.error("PDF generation error:", err);
+    } finally {
+      setGenerating(false);
+    }
   }
 
   return (
@@ -231,10 +274,20 @@ export function ReportUploadForm({ baseTitle, standard, columns }) {
               <div className="flex justify-end">
                 <Button
                   onClick={handleGeneratePDF}
+                  disabled={generating}
                   className="bg-[#16a34a] text-white hover:bg-[#15803d]"
                 >
-                  <FileDown className="size-4" />
-                  Generate PDF
+                  {generating ? (
+                    <>
+                      <Loader2 className="size-4 animate-spin" />
+                      Generating report...
+                    </>
+                  ) : (
+                    <>
+                      <FileDown className="size-4" />
+                      Generate PDF
+                    </>
+                  )}
                 </Button>
               </div>
             </div>
