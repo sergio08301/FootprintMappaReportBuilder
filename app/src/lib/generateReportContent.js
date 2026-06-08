@@ -172,6 +172,47 @@ const LIFECYCLE_STAGES = [
   },
 ];
 
+function summarisePCFPhases(data) {
+  const phases = [
+    { label: "Material Acquisition", key: "total_materials" },
+    { label: "Manufacturing",        key: "total_manufacturing" },
+    { label: "Transportation",       key: "total_transport" },
+    { label: "Distribution",         key: "total_distribution" },
+    { label: "Use",                  key: "total_use" },
+    { label: "End-of-life",          key: "total_end_of_life" },
+  ];
+  return data
+    .slice(0, 30)
+    .map((r) => {
+      const phaseStr = phases
+        .map((p) => `${p.label}: ${parseFloat(r[p.key] || 0).toFixed(3)}`)
+        .join(", ");
+      return `${r.product ?? "Unknown"} — Total: ${parseFloat(r.total_emissions || 0).toFixed(3)} kg CO2e (${phaseStr})`;
+    })
+    .join("\n");
+}
+
+export async function generateStrategicRecommendations(data, companyName, reportType) {
+  const dataSummary =
+    reportType === "pcf" ? summarisePCFPhases(data) : summariseOCF(data);
+
+  const prompt = `You are writing the Strategic Recommendations section of a professional Product Carbon Footprint consulting report conducted by Footprint Mappa for ${companyName}.
+Analyse this emissions data and identify the most significant opportunities for carbon reduction:
+${dataSummary}
+Write 3-4 recommendations. Each recommendation must have:
+- A short title summarising the action (max 8 words)
+- 1-2 paragraphs explaining what the company should do and why, referencing specific phases or products where the data shows disproportionate emissions
+Return the response as a JSON array with this exact format, no preamble:
+[{"title": "...", "body": "..."}, ...]
+Focus on phases with the highest emissions proportions across the products.`;
+
+  const text = await callAnthropic(prompt);
+
+  // Strip markdown code fences if the model wraps in ```json ... ```
+  const clean = text.replace(/^```(?:json)?\s*/i, "").replace(/```\s*$/, "").trim();
+  return JSON.parse(clean);
+}
+
 export async function generateScopeAndBoundaries(data, reportType) {
   if (reportType === "pcf") {
     const groups = groupProductsByLocation(data);

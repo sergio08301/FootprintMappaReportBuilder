@@ -65,25 +65,37 @@ const S = StyleSheet.create({
     width: 160,
     marginTop: 32,
   },
+  // Each logo in the two-logo row on the cover (when companyLogo is provided).
+  coverLogoItem: {
+    width: 120,
+  },
 
   // ── All subsequent pages ─────────────────────────────────────────────────────
+  // paddingTop lives here (not on contentWrap) so it applies on every overflow
+  // page, preventing content from sliding behind the fixed header logo.
   page: {
     backgroundColor: "#ffffff",
     fontFamily: "Helvetica",
+    paddingTop: 96,
+    paddingHorizontal: 60,
+    paddingBottom: 40,
   },
-  // Logo top-right; `fixed` repeats it on overflow pages automatically.
+  // FMAPPA logo top-right; `fixed` repeats it on overflow pages automatically.
   headerLogo: {
     position: "absolute",
     top: 24,
     right: 60,
     width: 72,
   },
-  // Content starts below the header logo.
+  // Company logo top-left (only shown when companyLogo prop is provided).
+  headerLogoLeft: {
+    position: "absolute",
+    top: 24,
+    left: 60,
+    width: 72,
+  },
   contentWrap: {
     flex: 1,
-    paddingHorizontal: 60,
-    paddingTop: 72,
-    paddingBottom: 40,
   },
   sectionTitle: {
     fontFamily: "Helvetica-Bold",
@@ -161,6 +173,16 @@ const S = StyleSheet.create({
   colPhase: { width: 160 },
   colSubs:  { flex: 1 },
 });
+
+// Logos shown at the bottom of the Methodological Approach page.
+const METHOD_LOGOS = [
+  { src: "/logos/defra.png",        label: "DEFRA" },
+  { src: "/logos/iea.png",          label: "IEA" },
+  { src: "/logos/ghg-protocol.png", label: "GHG Protocol" },
+  { src: "/logos/occc.png",         label: "OCCC" },
+  { src: "/logos/exiobase.png",     label: "EXIOBASE" },
+  { src: "/logos/iso-14067.png",    label: "ISO 14067" },
+];
 
 // Ordered list of lifecycle phases used in both the diagram and the table.
 const LIFECYCLE_PHASES = [
@@ -542,27 +564,36 @@ function groupByProductName(scopeData) {
   return Object.entries(byName).map(([name, variants]) => ({ name, variants }));
 }
 
-// ── Shared header (pages 2 +) ─────────────────────────────────────────────────
-function PageHeader() {
-  return <Image fixed src={LOGO} style={S.headerLogo} alt="" />;
-}
-
-// ── Section page helper ───────────────────────────────────────────────────────
-function SectionPage({ title, children }) {
-  return (
-    <Page size="A4" style={S.page}>
-      <PageHeader />
-      <View style={S.contentWrap}>
-        <Text style={S.sectionTitle}>{title}</Text>
-        {children}
-      </View>
-    </Page>
-  );
-}
-
 // ── Document ──────────────────────────────────────────────────────────────────
-export function PCFReport({ data, companyName, year, introText, methodText, scopeText, scopeData }) {
+export function PCFReport({ data, companyName, year, introText, methodText, scopeText, scopeData, companyLogo, productImages = {}, strategicRecs = [] }) {
   const productGroups = scopeData ? groupByProductName(scopeData) : [];
+
+  // Defined inside PCFReport so both helpers close over `companyLogo` without
+  // requiring prop-threading through every SectionPage / PageHeader call site.
+  function PageHeader() {
+    if (companyLogo) {
+      return (
+        <>
+          <Image fixed src={companyLogo} style={S.headerLogoLeft} alt="" />
+          <Image fixed src={LOGO} style={S.headerLogo} alt="" />
+        </>
+      );
+    }
+    return <Image fixed src={LOGO} style={S.headerLogo} alt="" />;
+  }
+
+  function SectionPage({ title, children }) {
+    return (
+      <Page size="A4" style={S.page}>
+        <PageHeader />
+        <View style={S.contentWrap}>
+          <Text style={S.sectionTitle}>{title}</Text>
+          {children}
+        </View>
+      </Page>
+    );
+  }
+
   return (
     <Document
       title={`Products Carbon Footprint Report ${year} — ${companyName}`}
@@ -573,7 +604,22 @@ export function PCFReport({ data, companyName, year, introText, methodText, scop
         <Text style={S.coverTitle}>
           {`Products Carbon Footprint Report ${year} ${companyName}`}
         </Text>
-        <Image src={LOGO} style={S.coverLogo} alt="Footprint Mappa" />
+        {companyLogo ? (
+          <View
+            style={{
+              flexDirection: "row",
+              alignItems: "center",
+              justifyContent: "center",
+              marginTop: 32,
+              gap: 48,
+            }}
+          >
+            <Image src={companyLogo} style={S.coverLogoItem} alt="Company logo" />
+            <Image src={LOGO} style={S.coverLogoItem} alt="Footprint Mappa" />
+          </View>
+        ) : (
+          <Image src={LOGO} style={S.coverLogo} alt="Footprint Mappa" />
+        )}
       </Page>
 
       {/* ── Page 2: Introduction ── */}
@@ -584,6 +630,26 @@ export function PCFReport({ data, companyName, year, introText, methodText, scop
       {/* ── Page 3: Methodological Approach ── */}
       <SectionPage title="2. Methodological Approach">
         {renderParagraphs(methodText, S.paragraph)}
+
+        {/* 3×2 logo grid */}
+        <View style={{ flexDirection: "row", flexWrap: "wrap", marginTop: 24 }}>
+          {METHOD_LOGOS.map((logo) => (
+            <View
+              key={logo.src}
+              style={{
+                width: "33.33%",
+                alignItems: "center",
+                paddingVertical: 12,
+                paddingHorizontal: 10,
+              }}
+            >
+              <Image
+                src={logo.src}
+                style={{ width: 80, height: 50, objectFit: "contain" }}
+              />
+            </View>
+          ))}
+        </View>
       </SectionPage>
 
       {/* ── Page 4: Scope and Boundaries ── */}
@@ -648,25 +714,40 @@ export function PCFReport({ data, companyName, year, introText, methodText, scop
               const num = `3.${idx + 1}`;
               const isMulti = variants.length > 1;
               const singleLoc = !isMulti ? variants[0]?.parsedLocation : null;
+              // First image found among this product's variants (keyed by raw CSV product name)
+              const productImg = variants.reduce(
+                (img, v) => img || productImages[v.product] || null,
+                null
+              );
               return (
-                <View key={num}>
+                <View key={num} wrap={false}>
                   <Text style={S.subsectionTitle}>{`${num} ${name}`}</Text>
-                  <Text style={S.paragraph}>
-                    {`This section presents the production route and carbon footprint results for ${name}.`}
-                  </Text>
-                  {singleLoc && (
-                    <Text style={S.paragraph}>
-                      {`The assessed scenario corresponds to manufacturing at ${singleLoc}.`}
-                    </Text>
-                  )}
-                  {isMulti &&
-                    variants.map((v, vi) => (
-                      <Text key={vi} style={S.paragraph}>
-                        {v.parsedLocation
-                          ? `The assessed scenario for ${name} (${v.parsedLocation}) corresponds to manufacturing at ${v.parsedLocation}.`
-                          : `The ${name} variant has no specified manufacturing location.`}
+
+                  {/* Intro text left, optional product image right */}
+                  <View style={{ flexDirection: "row", gap: 12 }}>
+                    <View style={{ flex: 1 }}>
+                      <Text style={S.paragraph}>
+                        {`This section presents the production route and carbon footprint results for ${name}.`}
                       </Text>
-                    ))}
+                      {singleLoc && (
+                        <Text style={S.paragraph}>
+                          {`The assessed scenario corresponds to manufacturing at ${singleLoc}.`}
+                        </Text>
+                      )}
+                      {isMulti &&
+                        variants.map((v, vi) => (
+                          <Text key={vi} style={S.paragraph}>
+                            {v.parsedLocation
+                              ? `The assessed scenario for ${name} (${v.parsedLocation}) corresponds to manufacturing at ${v.parsedLocation}.`
+                              : `The ${name} variant has no specified manufacturing location.`}
+                          </Text>
+                        ))}
+                    </View>
+                    {productImg && (
+                      <Image src={productImg} style={{ width: 80, height: 80 }} />
+                    )}
+                  </View>
+
                   <LifecycleDiagram variants={variants} />
                 </View>
               );
@@ -706,7 +787,7 @@ export function PCFReport({ data, companyName, year, introText, methodText, scop
                   : "0.0";
 
               return (
-                <View key={num}>
+                <View key={num} wrap={false}>
                   <Text style={S.subsectionTitle}>{`${num} ${name}`}</Text>
 
                   {/* 1 — Intro paragraph */}
@@ -736,49 +817,32 @@ export function PCFReport({ data, companyName, year, introText, methodText, scop
         </Page>
       )}
 
-      {/* ── Results (landscape) ── */}
-      <Page size="A4" orientation="landscape" style={S.page}>
-        <PageHeader />
-        <View style={S.contentWrap}>
-          <Text style={S.sectionTitle}>Results</Text>
-
-          {/* Header row — fixed so it repeats if the table overflows to more pages */}
-          <View style={S.tHead} fixed>
-            <View style={S.cProd}>
-              <Text style={S.th}>Product</Text>
-            </View>
-            <View style={S.cTotal}>
-              <Text style={S.th}>{"Total Emissions\n(kg CO2e)"}</Text>
-            </View>
-            {PHASE_COLS.map((c) => (
-              <View key={c.key} style={S.cPhase}>
-                <Text style={S.th}>{c.label}</Text>
-              </View>
-            ))}
-          </View>
-
-          {/* Data rows */}
-          {data.map((row, i) => (
-            <View
-              key={i}
-              style={[S.tRow, i % 2 !== 0 && S.tRowOdd]}
-              wrap={false}
-            >
-              <View style={S.cProd}>
-                <Text style={S.td}>{row.product ?? "—"}</Text>
-              </View>
-              <View style={S.cTotal}>
-                <Text style={S.tdR}>{fmt(row.total_emissions)}</Text>
-              </View>
-              {PHASE_COLS.map((c) => (
-                <View key={c.key} style={S.cPhase}>
-                  <Text style={S.tdR}>{fmt(row[c.key])}</Text>
-                </View>
-              ))}
+      {/* ── Section 5: Strategic Recommendations ── */}
+      {strategicRecs.length > 0 && (
+        <SectionPage title="5. Strategic Recommendations">
+          <Text style={[S.paragraph, { marginBottom: 16 }]}>
+            {`Footprint Mappa has identified the following main lines to decarbonise the products assessed for ${companyName}.`}
+          </Text>
+          {strategicRecs.map((rec, idx) => (
+            <View key={idx} wrap={false} style={{ marginBottom: 14 }}>
+              <Text style={[S.subsectionTitle, { marginTop: 0 }]}>
+                {`5.${idx + 1} `}
+                <Text style={S.bold}>{rec.title}</Text>
+              </Text>
+              {rec.body
+                .split(/\n\n+/)
+                .map((p) => p.trim())
+                .filter(Boolean)
+                .map((p, pi) => (
+                  <Text key={pi} style={S.paragraph}>
+                    {p}
+                  </Text>
+                ))}
             </View>
           ))}
-        </View>
-      </Page>
+        </SectionPage>
+      )}
+
     </Document>
   );
 }

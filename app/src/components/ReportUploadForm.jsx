@@ -1,9 +1,9 @@
 "use client";
 
-import { useState } from "react";
+import { useRef, useState } from "react";
 import Link from "next/link";
 import Papa from "papaparse";
-import { ArrowLeft, FileDown, FileText, Loader2, Upload } from "lucide-react";
+import { ArrowLeft, FileDown, FileText, ImageIcon, Loader2, Upload } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -44,9 +44,31 @@ export function ReportUploadForm({ baseTitle, standard, columns, pdfType }) {
   const [fileName, setFileName] = useState("");
   const [rows, setRows] = useState(null);
   const [generating, setGenerating] = useState(false);
+  const [logoBase64, setLogoBase64] = useState("");
+  const [logoFileName, setLogoFileName] = useState("");
+  const [productImages, setProductImages] = useState({});
+  const logoInputRef = useRef(null);
 
   const dynamicTitle =
     company && year ? `${baseTitle} — ${company} · ${year}` : baseTitle;
+
+  function handleLogoChange(e) {
+    const f = e.target.files?.[0] ?? null;
+    if (!f) return;
+    setLogoFileName(f.name);
+    const reader = new FileReader();
+    reader.onload = (ev) => setLogoBase64(ev.target.result);
+    reader.readAsDataURL(f);
+  }
+
+  function handleProductImageChange(productName, e) {
+    const f = e.target.files?.[0];
+    if (!f) return;
+    const reader = new FileReader();
+    reader.onload = (ev) =>
+      setProductImages((prev) => ({ ...prev, [productName]: ev.target.result }));
+    reader.readAsDataURL(f);
+  }
 
   function handleFileChange(e) {
     const f = e.target.files?.[0] ?? null;
@@ -76,7 +98,7 @@ export function ReportUploadForm({ baseTitle, standard, columns, pdfType }) {
     setGenerating(true);
     try {
       const [
-        { generateIntroduction, generateMethodologicalApproach, generateScopeAndBoundaries },
+        { generateIntroduction, generateMethodologicalApproach, generateScopeAndBoundaries, generateStrategicRecommendations },
         { pdf },
       ] = await Promise.all([
         import("@/lib/generateReportContent"),
@@ -86,6 +108,9 @@ export function ReportUploadForm({ baseTitle, standard, columns, pdfType }) {
       const introText = await generateIntroduction(rows, company, year, pdfType);
       const methodText = await generateMethodologicalApproach(company, year);
       const { text: scopeText, scopeData } = await generateScopeAndBoundaries(rows, pdfType);
+      const strategicRecs = pdfType === "pcf"
+        ? await generateStrategicRecommendations(rows, company, pdfType)
+        : [];
 
       let doc;
       if (pdfType === "pcf") {
@@ -99,6 +124,9 @@ export function ReportUploadForm({ baseTitle, standard, columns, pdfType }) {
             methodText={methodText}
             scopeText={scopeText}
             scopeData={scopeData}
+            companyLogo={logoBase64 || undefined}
+            productImages={productImages}
+            strategicRecs={strategicRecs}
           />
         );
       }
@@ -191,6 +219,43 @@ export function ReportUploadForm({ baseTitle, standard, columns, pdfType }) {
                 </div>
 
                 <div className="flex flex-col gap-1.5">
+                  <label className="text-sm font-medium">
+                    Company logo{" "}
+                    <span className="font-normal text-muted-foreground">(optional)</span>
+                  </label>
+                  <div className="flex items-center gap-3">
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      onClick={() => logoInputRef.current?.click()}
+                    >
+                      <Upload className="size-4" />
+                      Upload logo
+                    </Button>
+                    {logoBase64 && (
+                      <>
+                        <img
+                          src={logoBase64}
+                          alt="Logo preview"
+                          className="h-8 w-auto max-w-30 rounded object-contain"
+                        />
+                        <span className="max-w-40 truncate text-xs text-muted-foreground">
+                          {logoFileName}
+                        </span>
+                      </>
+                    )}
+                    <input
+                      ref={logoInputRef}
+                      type="file"
+                      accept="image/png,image/jpeg,image/svg+xml"
+                      className="sr-only"
+                      onChange={handleLogoChange}
+                    />
+                  </div>
+                </div>
+
+                <div className="flex flex-col gap-1.5">
                   <label className="text-sm font-medium">CSV file</label>
                   <label className="flex cursor-pointer flex-col items-center justify-center gap-2 rounded-lg border border-dashed border-input bg-muted/30 px-6 py-8 text-sm text-muted-foreground transition-colors hover:bg-muted/50">
                     <FileText className="size-7 text-muted-foreground/50" />
@@ -239,6 +304,9 @@ export function ReportUploadForm({ baseTitle, standard, columns, pdfType }) {
                   <Table>
                     <TableHeader>
                       <TableRow>
+                        {pdfType === "pcf" && (
+                          <TableHead className="w-10">Image</TableHead>
+                        )}
                         {columns.map((col) => (
                           <TableHead
                             key={col.key}
@@ -252,6 +320,36 @@ export function ReportUploadForm({ baseTitle, standard, columns, pdfType }) {
                     <TableBody>
                       {rows.map((row, i) => (
                         <TableRow key={i}>
+                          {pdfType === "pcf" && (
+                            <TableCell className="w-10 py-1">
+                              <div className="flex items-center">
+                                <label
+                                  htmlFor={`product-img-${i}`}
+                                  className="cursor-pointer rounded p-0.5 hover:bg-muted"
+                                  title="Upload product image"
+                                >
+                                  {productImages[row.product] ? (
+                                    <img
+                                      src={productImages[row.product]}
+                                      alt=""
+                                      className="h-8 w-8 rounded object-contain"
+                                    />
+                                  ) : (
+                                    <ImageIcon className="size-5 text-muted-foreground/40" />
+                                  )}
+                                </label>
+                                <input
+                                  id={`product-img-${i}`}
+                                  type="file"
+                                  accept="image/png,image/jpeg,image/svg+xml"
+                                  className="sr-only"
+                                  onChange={(e) =>
+                                    handleProductImageChange(row.product, e)
+                                  }
+                                />
+                              </div>
+                            </TableCell>
+                          )}
                           {columns.map((col) => (
                             <TableCell
                               key={col.key}
