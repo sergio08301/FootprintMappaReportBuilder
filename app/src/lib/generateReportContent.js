@@ -121,32 +121,54 @@ const LIFECYCLE_STAGES = [
   {
     phase: "Material Acquisition",
     key: "total_materials",
-    subcategories: ["1.1 Raw materials", "1.2 Inbound packaging", "1.3 Outbound packaging"],
+    subcategories: [
+      "1.1 Raw materials",
+      "1.2 Inbound packaging",
+      "1.3 Outbound packaging",
+    ],
   },
   {
     phase: "Manufacturing",
     key: "total_manufacturing",
-    subcategories: ["2.1 Electricity", "2.2 Other energy", "2.3 Consumables", "2.4 Waste generated"],
+    subcategories: [
+      "2.1 Electricity",
+      "2.2 Other energy",
+      "2.3 Consumables",
+      "2.4 Waste generated",
+    ],
   },
   {
     phase: "Transportation",
     key: "total_transport",
-    subcategories: ["3.1", "3.2", "3.3", "3.4"],
+    subcategories: [
+      "3.1 Upstream transport of raw materials and packaging",
+      "3.2 Upstream transport of consumables and additives",
+      "3.3 Downstream transport of waste to waste manager",
+      "3.4 Internal transport between sites",
+    ],
   },
   {
     phase: "Distribution",
     key: "total_distribution",
-    subcategories: ["4.1"],
+    subcategories: ["4.1 Product distribution"],
   },
   {
     phase: "Use",
     key: "total_use",
-    subcategories: ["5.1", "5.2", "5.3"],
+    subcategories: [
+      "5.1 Product use",
+      "5.2 Maintenance and servicing",
+      "5.3 Other use-stage emissions",
+    ],
   },
   {
     phase: "End-of-life",
     key: "total_end_of_life",
-    subcategories: ["6.1", "6.2", "6.3"],
+    subcategories: [
+      "6.1 Collection and transport of end-of-life products",
+      "6.2 End-of-life treatment",
+      "6.3 Final disposal",
+    ],
   },
 ];
 
