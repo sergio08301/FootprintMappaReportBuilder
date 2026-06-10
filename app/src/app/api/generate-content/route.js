@@ -3,6 +3,10 @@
 
 export async function POST(request) {
   const apiKey = process.env.ANTHROPIC_API_KEY;
+  console.log(
+    "[generate-content] ANTHROPIC_API_KEY:",
+    apiKey ? `set (${apiKey.slice(0, 4)}...${apiKey.slice(-4)})` : "NOT SET"
+  );
   if (!apiKey) {
     return Response.json(
       { error: "ANTHROPIC_API_KEY environment variable is not set" },
