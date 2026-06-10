@@ -1,72 +1,90 @@
 import Link from "next/link";
-import { Layers, Building2, ArrowRight } from "lucide-react";
+import { ArrowRight } from "lucide-react";
 import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 
-const reportTypes = [
-  {
-    href: "/pcf",
-    icon: Layers,
-    title: "PCF Report",
-    standard: "ISO 14067",
-    description:
-      "Product Carbon Footprint — quantify greenhouse gas emissions across the full lifecycle of a product, from materials to end of life.",
-  },
-  {
-    href: "/ocf",
-    icon: Building2,
-    title: "OCF Report",
-    standard: "ISO 14064",
-    description:
-      "Organization Carbon Footprint — measure and report your organization's total GHG emissions across Scopes 1, 2, and 3.",
-  },
-];
+const GRADIENT = {
+  background: "linear-gradient(to right, #fdc2d8, #fca65e, #ff7983, #041282)",
+  WebkitBackgroundClip: "text",
+  WebkitTextFillColor: "transparent",
+  backgroundClip: "text",
+};
+
 
 export default function Home() {
   return (
     <div className="flex flex-col min-h-screen bg-background">
       <header className="border-b px-6 py-4">
-        <div className="mx-auto max-w-4xl flex items-center gap-2">
-          <span className="text-[#16a34a] font-bold text-lg tracking-tight">Footprint Mappa</span>
-          <span className="text-muted-foreground text-sm">Report Builder</span>
+        <div className="mx-auto max-w-4xl flex items-center justify-between w-full">
+          <div className="flex items-center gap-2">
+            <a href="https://footprintmappa.com" target="_blank" rel="noreferrer">
+              <img src="/logos/mappa.png" alt="Footprint Mappa" className="h-8 w-auto" />
+            </a>
+            <span className="text-muted-foreground text-sm">Report Builder</span>
+          </div>
+          <Button asChild variant="ghost" size="sm">
+            <Link href="/history">History</Link>
+          </Button>
         </div>
       </header>
 
       <main className="flex flex-1 flex-col items-center justify-center px-6 py-16">
         <div className="mx-auto w-full max-w-4xl">
           <div className="mb-10 text-center">
-            <h1 className="text-3xl font-semibold tracking-tight text-foreground">
-              Select Report Type
+            <h1 className="text-5xl font-bold tracking-tight text-foreground">
+              Turn operational data into
             </h1>
-            <p className="mt-2 text-muted-foreground">
-              Choose the carbon footprint standard you want to report against.
-            </p>
           </div>
 
           <div className="grid gap-6 sm:grid-cols-2">
-            {reportTypes.map(({ href, icon: Icon, title, standard, description }) => (
-              <Card key={href} className="flex flex-col">
-                <CardHeader>
-                  <div className="mb-2 flex size-10 items-center justify-center rounded-lg bg-[#16a34a]/10">
-                    <Icon className="size-5 text-[#16a34a]" />
-                  </div>
-                  <CardTitle className="text-lg">{title}</CardTitle>
-                  <CardDescription>
-                    <span className="font-mono text-xs font-medium text-[#16a34a]">{standard}</span>
-                  </CardDescription>
-                </CardHeader>
-                <CardContent className="flex-1">
-                  <p className="text-sm text-muted-foreground">{description}</p>
-                </CardContent>
-                <CardFooter>
-                  <Button asChild className="w-full bg-[#16a34a] hover:bg-[#15803d] text-white">
-                    <Link href={href}>
-                      Generate {title} <ArrowRight className="ml-1 size-4" />
-                    </Link>
-                  </Button>
-                </CardFooter>
-              </Card>
-            ))}
+            {/* PCF — active */}
+            <Card className="flex flex-col">
+              <CardHeader>
+                <CardTitle className="text-5xl font-bold">
+                  <span style={GRADIENT}>PCF Report</span>
+                </CardTitle>
+                <CardDescription>
+                  <span className="font-mono text-xs font-medium text-orange-500">ISO 14067</span>
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="flex-1">
+                <p className="text-sm text-muted-foreground">
+                  Product Carbon Footprint — quantify greenhouse gas emissions across the full lifecycle of a product, from materials to end of life.
+                </p>
+              </CardContent>
+              <CardFooter>
+                <Button asChild className="w-full bg-orange-500 hover:bg-orange-600 text-white">
+                  <Link href="/pcf">
+                    Generate PCF Report <ArrowRight className="ml-1 size-4" />
+                  </Link>
+                </Button>
+              </CardFooter>
+            </Card>
+
+            {/* OCF — coming soon */}
+            <Card className="relative flex flex-col opacity-60 cursor-not-allowed">
+              <span className="absolute right-4 top-4 rounded-full bg-muted px-2.5 py-0.5 text-xs font-medium text-muted-foreground">
+                Coming soon
+              </span>
+              <CardHeader>
+                <CardTitle className="text-5xl font-bold">
+                  <span style={GRADIENT}>OCF Report</span>
+                </CardTitle>
+                <CardDescription>
+                  <span className="font-mono text-xs font-medium text-orange-500">ISO 14064</span>
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="flex-1">
+                <p className="text-sm text-muted-foreground">
+                  Organization Carbon Footprint — measure and report your organization's total GHG emissions across Scopes 1, 2, and 3.
+                </p>
+              </CardContent>
+              <CardFooter>
+                <Button disabled className="w-full bg-orange-500 text-white">
+                  Generate OCF Report <ArrowRight className="ml-1 size-4" />
+                </Button>
+              </CardFooter>
+            </Card>
           </div>
         </div>
       </main>

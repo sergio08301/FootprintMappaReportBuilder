@@ -138,6 +138,24 @@ export function ReportUploadForm({ baseTitle, standard, columns, pdfType }) {
       a.download = `${pdfType.toUpperCase()}_${company.replace(/\s+/g, "_")}_${year}.pdf`;
       a.click();
       URL.revokeObjectURL(url);
+
+      // Save record to Xano — failure is non-fatal
+      try {
+        const { saveReport } = await import("@/lib/xano");
+        const totalEmissions = rows.reduce(
+          (s, r) => s + (parseFloat(r.total_emissions) || 0),
+          0
+        );
+        await saveReport({
+          company_name: company,
+          report_type: pdfType.toUpperCase(),
+          year,
+          products_count: rows.length,
+          total_emissions: totalEmissions,
+        });
+      } catch (xanoErr) {
+        console.error("Xano saveReport error:", xanoErr);
+      }
     } catch (err) {
       console.error("PDF generation error:", err);
     } finally {
@@ -157,20 +175,27 @@ export function ReportUploadForm({ baseTitle, standard, columns, pdfType }) {
 
       <header className="border-b px-6 py-4">
         <div className="mx-auto flex max-w-5xl items-center justify-between">
-          <span className="font-bold tracking-tight">Footprint Mappa</span>
-          <Button asChild variant="ghost" size="sm">
-            <Link href="/">
-              <ArrowLeft className="size-4" />
-              Back
-            </Link>
-          </Button>
+          <a href="https://footprintmappa.com" target="_blank" rel="noreferrer">
+            <img src="/logos/mappa.png" alt="Footprint Mappa" className="h-8 w-auto" />
+          </a>
+          <div className="flex items-center gap-1">
+            <Button asChild variant="ghost" size="sm">
+              <Link href="/history">History</Link>
+            </Button>
+            <Button asChild variant="ghost" size="sm">
+              <Link href="/">
+                <ArrowLeft className="size-4" />
+                Back
+              </Link>
+            </Button>
+          </div>
         </div>
       </header>
 
       <main className="flex flex-1 flex-col items-center px-6 py-12">
         <div className="mx-auto w-full max-w-5xl">
           <div className="mb-8">
-            <p className="mb-1 font-mono text-xs font-medium text-[#16a34a]">
+            <p className="mb-1 font-mono text-xs font-medium text-orange-500">
               {standard}
             </p>
             <h1 className="text-2xl font-semibold tracking-tight text-foreground">
@@ -280,7 +305,7 @@ export function ReportUploadForm({ baseTitle, standard, columns, pdfType }) {
 
                 <Button
                   type="submit"
-                  className="w-full bg-[#16a34a] text-white hover:bg-[#15803d]"
+                  className="w-full bg-orange-500 text-white hover:bg-orange-600"
                   disabled={!company || !year || !file}
                 >
                   <Upload className="size-4" />
@@ -373,7 +398,7 @@ export function ReportUploadForm({ baseTitle, standard, columns, pdfType }) {
                 <Button
                   onClick={handleGeneratePDF}
                   disabled={generating}
-                  className="bg-[#16a34a] text-white hover:bg-[#15803d]"
+                  className="bg-orange-500 text-white hover:bg-orange-600"
                 >
                   {generating ? (
                     <>

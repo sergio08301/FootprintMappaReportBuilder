@@ -43,12 +43,19 @@ function fmt(val) {
   return isNaN(n) ? "—" : n.toFixed(3);
 }
 
+// ── Design tokens ─────────────────────────────────────────────────────────────
+const C = {
+  primary: "#1a2f5e",
+  body:    "#2d2d2d",
+  rowAlt:  "#f7f7f7",
+  white:   "#ffffff",
+};
+
 // ── Styles ────────────────────────────────────────────────────────────────────
 const S = StyleSheet.create({
   // ── Cover (page 1) ──────────────────────────────────────────────────────────
-  // No header, no footer. All content vertically and horizontally centred.
   coverPage: {
-    backgroundColor: "#ffffff",
+    backgroundColor: C.white,
     fontFamily: "Helvetica",
     alignItems: "center",
     justifyContent: "center",
@@ -57,7 +64,7 @@ const S = StyleSheet.create({
   coverTitle: {
     fontFamily: "Helvetica-Bold",
     fontSize: 34,
-    color: "#000000",
+    color: C.primary,
     textAlign: "center",
     lineHeight: 1.3,
   },
@@ -65,29 +72,24 @@ const S = StyleSheet.create({
     width: 160,
     marginTop: 32,
   },
-  // Each logo in the two-logo row on the cover (when companyLogo is provided).
   coverLogoItem: {
     width: 120,
   },
 
   // ── All subsequent pages ─────────────────────────────────────────────────────
-  // paddingTop lives here (not on contentWrap) so it applies on every overflow
-  // page, preventing content from sliding behind the fixed header logo.
   page: {
-    backgroundColor: "#ffffff",
+    backgroundColor: C.white,
     fontFamily: "Helvetica",
     paddingTop: 96,
     paddingHorizontal: 60,
     paddingBottom: 40,
   },
-  // FMAPPA logo top-right; `fixed` repeats it on overflow pages automatically.
   headerLogo: {
     position: "absolute",
     top: 24,
     right: 60,
     width: 72,
   },
-  // Company logo top-left (only shown when companyLogo prop is provided).
   headerLogoLeft: {
     position: "absolute",
     top: 24,
@@ -99,66 +101,65 @@ const S = StyleSheet.create({
   },
   sectionTitle: {
     fontFamily: "Helvetica-Bold",
-    fontSize: 16,
-    color: "#000000",
+    fontSize: 14,
+    color: C.primary,
     marginBottom: 14,
   },
   subsectionTitle: {
     fontFamily: "Helvetica-Bold",
-    fontSize: 12,
-    color: "#000000",
+    fontSize: 11,
+    color: C.primary,
     marginTop: 18,
     marginBottom: 8,
   },
   paragraph: {
-    fontSize: 10,
-    color: "#333333",
+    fontSize: 9,
+    color: C.body,
     lineHeight: 1.7,
     marginBottom: 10,
   },
   bold: { fontFamily: "Helvetica-Bold" },
   bulletRow: { flexDirection: "row", marginBottom: 4 },
-  bulletDot: { fontSize: 10, color: "#333333", width: 12 },
-  bulletText: { flex: 1, fontSize: 10, color: "#333333", lineHeight: 1.6 },
+  bulletDot: { fontSize: 9, color: C.body, width: 12 },
+  bulletText: { flex: 1, fontSize: 9, color: C.body, lineHeight: 1.6 },
 
-  // ── Results table (landscape, usable ~722pt) ────────────────────────────────
-  // cProd(120) + cTotal(85) + 6×cPhase(86) = 721pt
-  tHead: { flexDirection: "row", backgroundColor: "#041282" },
+  // ── Results table ───────────────────────────────────────────────────────────
+  tHead: { flexDirection: "row", backgroundColor: C.primary },
   tRow: {
     flexDirection: "row",
     borderBottomWidth: 0.5,
     borderBottomColor: "#e5e7eb",
   },
-  tRowOdd: { backgroundColor: "#f8f8f8" },
+  tRowOdd: { backgroundColor: C.rowAlt },
   th: {
     fontFamily: "Helvetica-Bold",
-    fontSize: 7.5,
-    color: "#ffffff",
+    fontSize: 9,
+    color: C.white,
     padding: 6,
     lineHeight: 1.4,
   },
-  td:  { fontSize: 8, color: "#111111", padding: 6 },
-  tdR: { fontSize: 8, color: "#111111", padding: 6, textAlign: "right" },
+  td:  { fontSize: 8, color: C.body, padding: 6 },
+  tdR: { fontSize: 8, color: C.body, padding: 6, textAlign: "right" },
   cProd:  { width: 120 },
   cTotal: { width: 85 },
   cPhase: { width: 86 },
 
-  // ── Scope section tables (portrait, usable 595.28−120 = ~475pt) ─────────────
+  // ── Scope section tables ─────────────────────────────────────────────────────
   scopeTableWrap: { marginTop: 20, marginBottom: 16 },
   scopeTableLabel: {
     fontFamily: "Helvetica-Bold",
     fontSize: 8,
-    color: "#555555",
+    color: C.body,
     marginBottom: 5,
     textTransform: "uppercase",
     letterSpacing: 0.6,
   },
-  sHead: { flexDirection: "row", backgroundColor: "#041282" },
+  sHead: { flexDirection: "row", backgroundColor: C.primary },
   sRow:  { flexDirection: "row", borderBottomWidth: 0.5, borderBottomColor: "#e5e7eb" },
-  sRowAlt:      { backgroundColor: "#f8f8f8" },
+  sRowAlt:      { backgroundColor: C.rowAlt },
   sRowInactive: { backgroundColor: "#f3f4f6" },
-  sTh: { fontFamily: "Helvetica-Bold", fontSize: 8, color: "#ffffff", padding: 6 },
-  sTd: { fontSize: 8, color: "#111111", padding: 6 },
+  sTh: { fontFamily: "Helvetica-Bold", fontSize: 9, color: C.white, padding: 6 },
+  sTd: { fontSize: 8, color: C.body, padding: 6 },
   sTdInactive: { fontSize: 8, color: "#b0b7c3", padding: 6 },
   scopeTableNote: {
     fontFamily: "Helvetica-Oblique",
@@ -166,10 +167,8 @@ const S = StyleSheet.create({
     color: "#888888",
     marginTop: 5,
   },
-  // column widths for location table
   colLocation: { width: 140 },
   colProducts: { flex: 1 },
-  // column widths for lifecycle table
   colPhase: { width: 160 },
   colSubs:  { flex: 1 },
 });
@@ -357,7 +356,7 @@ function LifecycleDiagram({ variants }) {
               <Text
                 style={{
                   fontSize: 8,
-                  color: inactive ? "#b0b7c3" : "#333333",
+                  color: inactive ? "#b0b7c3" : C.body,
                   textAlign: "center",
                   lineHeight: 1.5,
                 }}
@@ -404,7 +403,7 @@ function VariantComparisonTable({ variants }) {
             </View>
           ))}
           <View style={{ width: cTotal }}>
-            <Text style={[S.sTd, { textAlign: "right", fontFamily: "Helvetica-Bold" }]}>
+            <Text style={[S.sTd, { textAlign: "right", fontFamily: "Helvetica-Bold", color: C.primary }]}>
               {fmt(v.total_emissions)}
             </Text>
           </View>
@@ -482,10 +481,10 @@ function DonutChartPDF({ variants }) {
             justifyContent: "center",
           }}
         >
-          <Text style={{ fontSize: 9, fontFamily: "Helvetica-Bold", color: "#111111", textAlign: "center" }}>
+          <Text style={{ fontSize: 9, fontFamily: "Helvetica-Bold", color: C.primary, textAlign: "center" }}>
             {total.toFixed(1)}
           </Text>
-          <Text style={{ fontSize: 6, color: "#666666", textAlign: "center" }}>kg CO2e</Text>
+          <Text style={{ fontSize: 6, color: C.body, textAlign: "center" }}>kg CO2e</Text>
         </View>
       </View>
 
@@ -496,7 +495,7 @@ function DonutChartPDF({ variants }) {
           return (
             <View key={i} style={{ flexDirection: "row", alignItems: "center", marginBottom: 5 }}>
               <View style={{ width: 8, height: 8, backgroundColor: p.color, marginRight: 6, flexShrink: 0 }} />
-              <Text style={{ fontSize: 7, color: "#333333", flex: 1 }}>
+              <Text style={{ fontSize: 7, color: C.body, flex: 1 }}>
                 <Text style={{ fontFamily: "Helvetica-Bold" }}>{p.label}</Text>
                 {`: ${p.value.toFixed(3)} kg CO2e (${pct}%)`}
               </Text>
@@ -528,7 +527,7 @@ function BarChartPDF({ variants }) {
           const barH = Math.max((d.value / maxVal) * barAreaH, 1);
           const x = leftPad + i * (barW + gap);
           const y = topPad + barAreaH - barH;
-          return <Rect key={i} x={x} y={y} width={barW} height={barH} fill="#041282" />;
+          return <Rect key={i} x={x} y={y} width={barW} height={barH} fill={C.primary} />;
         })}
       </Svg>
       {/* Labels centred below each bar */}
@@ -538,8 +537,8 @@ function BarChartPDF({ variants }) {
             key={i}
             style={{ width: barW, marginRight: i < data.length - 1 ? gap : 0, alignItems: "center" }}
           >
-            <Text style={{ fontSize: 7, color: "#333333", textAlign: "center" }}>{d.label}</Text>
-            <Text style={{ fontSize: 7, color: "#555555", fontFamily: "Helvetica-Bold", textAlign: "center" }}>
+            <Text style={{ fontSize: 7, color: C.body, textAlign: "center" }}>{d.label}</Text>
+            <Text style={{ fontSize: 7, color: C.primary, fontFamily: "Helvetica-Bold", textAlign: "center" }}>
               {d.value.toFixed(2)}
             </Text>
           </View>
